@@ -1,4 +1,4 @@
-const CACHE_NAME = "ganesh-chanda-v1";
+const CACHE_NAME = "ganesh-chanda-v3";
 
 const FILES_TO_CACHE = [
   "/ganesh-chanda-app/",
