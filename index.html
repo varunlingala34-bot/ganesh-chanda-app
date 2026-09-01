@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Ganesh Chanda Collection</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    margin:0;
+    background:#f4f4f4;
+    color:#222;
+}
+
+.app{
+    max-width:500px;
+    margin:auto;
+    min-height:100vh;
+    background:white;
+}
+
+.setup-page{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.setup-card{
+    width:100%;
+    background:white;
+    padding:25px;
+    border-radius:18px;
+    box-shadow:0 3px 15px rgba(0,0,0,.15);
+}
+
+.setup-card h1,
+.setup-card p{
+    text-align:center;
+}
+
+.setup-card h1{
+    color:#6a11cb;
+}
+
+.header{
+    background:linear-gradient(135deg,#6a11cb,#9b2cff);
+    color:white;
+    padding:25px 20px;
+}
+
+.header h1{
+    margin:0;
+    font-size:25px;
+}
+
+.header p{
+    margin:8px 0 0;
+}
+
+.content{
+    padding:20px;
+    padding-bottom:90px;
+}
+
+.card{
+    background:white;
+    padding:18px;
+    margin-bottom:15px;
+    border-radius:15px;
+    box-shadow:0 2px 8px rgba(0,0,0,.1);
+}
+
+.card h2{
+    margin-top:0;
+}
+
+input, textarea, select{
+    width:100%;
+    padding:14px;
+    margin-top:10px;
+    margin-bottom:10px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+}
+
+textarea{
+    resize:none;
+    height:80px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    font-size:15px;
+    cursor:pointer;
+    margin-top:8px;
+}
+
+.primary-btn{
+    background:#6a11cb;
+    color:white;
+}
+
+.create{
+    background:#16a34a;
+    color:white;
+}
+
+.receipt{
+    border-left:5px solid #6a11cb;
+}
+
+.receipt h3{
+    color:#6a11cb;
+}
+
+.empty{
+    color:#777;
+    text-align:center;
+    padding:15px;
+}
+
+.report-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.report-box{
+    padding:15px;
+    border-radius:12px;
+    text-align:center;
+    background:#f3e8ff;
+}
+
+.report-box h3{
+    margin:0;
+    font-size:14px;
+}
+
+.report-box p{
+    margin:10px 0 0;
+    font-size:21px;
+    font-weight:bold;
+    color:#6a11cb;
+}
+
+.action-buttons{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:6px;
+    margin-top:15px;
+}
+
+.view-btn{
+    background:#2563eb;
+    color:white;
+}
+
+.print-btn{
+    background:#f59e0b;
+    color:white;
+}
+
+.whatsapp-btn{
+    background:#16a34a;
+    color:white;
+}
+
+.bottom-nav{
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    background:white;
+    display:flex;
+    justify-content:space-around;
+    padding:12px;
+    border-top:1px solid #ddd;
+}
+
+.nav{
+    text-align:center;
+    font-size:13px;
+    cursor:pointer;
+}
+
+/* RECEIPT MODAL */
+
+.modal{
+    display:none;
+    position:fixed;
+    z-index:1000;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
+    overflow:auto;
+    background:rgba(0,0,0,.6);
+    padding:20px;
+}
+
+.modal-content{
+    max-width:500px;
+    margin:20px auto;
+    background:white;
+    border-radius:15px;
+    padding:20px;
+}
+
+.close-btn{
+    background:#dc2626;
+    color:white;
+}
+
+.professional-receipt{
+    border:2px solid #6a11cb;
+    border-radius:12px;
+    padding:20px;
+}
+
+.receipt-header{
+    text-align:center;
+    border-bottom:2px solid #ddd;
+    padding-bottom:12px;
+    margin-bottom:15px;
+}
+
+.receipt-header h2{
+    color:#6a11cb;
+    margin:5px 0;
+}
+
+.receipt-title{
+    text-align:center;
+    font-weight:bold;
+    font-size:18px;
+    margin:15px 0;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- SETUP PAGE -->
+
+<div id="setupPage" class="setup-page">
+
+<div class="setup-card">
+
+<h1>🙏 Welcome</h1>
+<p>Set up your Association details</p>
+
+<input type="text" id="associationName"
+placeholder="Association / Mandal Name">
+
+<textarea id="associationAddress"
+placeholder="Association Address"></textarea>
+
+<input type="text" id="adminName"
+placeholder="Admin / Collector Name">
+
+<input type="tel" id="whatsappNumber"
+placeholder="WhatsApp Number">
+
+<button class="primary-btn" onclick="saveAssociation()">
+Save & Continue 🚀
+</button>
+
+</div>
+</div>
+
+
+<!-- MAIN APP -->
+
+<div id="mainApp" class="app" style="display:none;">
+
+<div class="header">
+<h1 id="displayAssociationName"></h1>
+<p id="displayAssociationAddress"></p>
+</div>
+
+<div class="content">
+
+<!-- REPORT -->
+
+<div class="card">
+
+<h2>📊 Collection Report</h2>
+
+<div class="report-grid">
+
+<div class="report-box">
+<h3>👥 Total People</h3>
+<p id="totalPeople">0</p>
+</div>
+
+<div class="report-box">
+<h3>🧾 Total Receipts</h3>
+<p id="totalReceipts">0</p>
+</div>
+
+<div class="report-box">
+<h3>💰 Total Chanda</h3>
+<p id="totalAmount">₹0</p>
+</div>
+
+<div class="report-box">
+<h3>✅ Paid</h3>
+<p id="paidAmount">₹0</p>
+</div>
+
+<div class="report-box">
+<h3>❌ Unpaid</h3>
+<p id="unpaidAmount">₹0</p>
+</div>
+
+</div>
+</div>
+
+
+<!-- CREATE RECEIPT -->
+
+<div class="card">
+
+<h2>➕ Create New Receipt</h2>
+
+<input type="text" id="name"
+placeholder="Enter Person Name">
+
+<input type="tel" id="phone"
+placeholder="Enter Mobile Number">
+
+<textarea id="address"
+placeholder="Enter Person Address"></textarea>
+
+<input type="number" id="amount"
+placeholder="Enter Chanda Amount">
+
+<input type="date" id="date">
+
+<select id="status">
+<option value="Paid">✅ Paid</option>
+<option value="Unpaid">❌ Unpaid</option>
+</select>
+
+<button class="create" onclick="createReceipt()">
+🧾 Create Receipt
+</button>
+
+</div>
+
+
+<!-- COLLECTION LIST -->
+
+<div class="card">
+
+<h2>📋 Collection List</h2>
+
+<input
+type="text"
+id="searchInput"
+placeholder="🔍 Search by Name or Mobile Number"
+oninput="searchReceipts()"
+>
+
+<div id="receiptList"></div>
+
+</div>
+
+</div>
+
+<div class="bottom-nav">
+<div class="nav">🏠<br>Home</div>
+<div class="nav">🔍<br>Search</div>
+<div class="nav">🧾<br>Receipts</div>
+<div class="nav">⚙️<br>Settings</div>
+</div>
+
+</div>
+
+
+<!-- RECEIPT VIEW MODAL -->
+
+<div id="receiptModal" class="modal">
+
+<div class="modal-content">
+
+<div id="professionalReceipt"></div>
+
+<button class="print-btn" onclick="printReceipt()">
+🖨️ Print / Save as PDF
+</button>
+
+<button class="close-btn" onclick="closeReceipt()">
+✖ Close
+</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+let association =
+JSON.parse(localStorage.getItem("ganeshAssociation"));
+
+let receipts =
+JSON.parse(localStorage.getItem("ganeshReceipts")) || [];
+
+
+if(association){
+    showMainApp();
+}else{
+    document.getElementById("setupPage").style.display="flex";
+}
+
+
+/* SAVE ASSOCIATION */
+
+function saveAssociation(){
+
+    let name =
+    document.getElementById("associationName").value.trim();
+
+    let address =
+    document.getElementById("associationAddress").value.trim();
+
+    let admin =
+    document.getElementById("adminName").value.trim();
+
+    let whatsapp =
+    document.getElementById("whatsappNumber").value.trim();
+
+
+    if(name === "" || address === "" ||
+       admin === "" || whatsapp === ""){
+
+        alert("Please fill all Association details!");
+        return;
+    }
+
+
+    association = {
+        name:name,
+        address:address,
+        admin:admin,
+        whatsapp:whatsapp
+    };
+
+
+    localStorage.setItem(
+        "ganeshAssociation",
+        JSON.stringify(association)
+    );
+
+    showMainApp();
+}
+
+
+/* SHOW MAIN APP */
+
+function showMainApp(){
+
+    document.getElementById("setupPage").style.display="none";
+    document.getElementById("mainApp").style.display="block";
+
+    document.getElementById("displayAssociationName").innerText =
+    "🙏 " + association.name;
+
+    document.getElementById("displayAssociationAddress").innerText =
+    association.address;
+
+    displayReceipts();
+    updateReport();
+}
+
+
+/* CREATE RECEIPT */
+
+function createReceipt(){
+
+    let name = document.getElementById("name").value.trim();
+    let phone = document.getElementById("phone").value.trim();
+    let address = document.getElementById("address").value.trim();
+    let amount = document.getElementById("amount").value;
+    let date = document.getElementById("date").value;
+    let status = document.getElementById("status").value;
+
+
+    if(name === "" || phone === "" ||
+       address === "" || amount === "" || date === ""){
+
+        alert("Please fill all details!");
+        return;
+    }
+
+
+    let newReceipt = {
+
+        receiptNumber: receipts.length + 1,
+        name:name,
+        phone:phone,
+        address:address,
+        amount:amount,
+        date:date,
+        status:status
+
+    };
+
+
+    receipts.unshift(newReceipt);
+
+    localStorage.setItem(
+        "ganeshReceipts",
+        JSON.stringify(receipts)
+    );
+
+
+    displayReceipts();
+    updateReport();
+
+
+    document.getElementById("name").value="";
+    document.getElementById("phone").value="";
+    document.getElementById("address").value="";
+    document.getElementById("amount").value="";
+    document.getElementById("date").value="";
+
+
+    alert("Receipt Created Successfully! 🎉");
+}
+
+
+/* UPDATE REPORT */
+
+function updateReport(){
+
+    let total = 0;
+    let paid = 0;
+    let unpaid = 0;
+
+    receipts.forEach(function(receipt){
+
+        let amount = Number(receipt.amount);
+
+        total += amount;
+
+        if(receipt.status === "Paid"){
+            paid += amount;
+        }else{
+            unpaid += amount;
+        }
+
+    });
+
+
+    document.getElementById("totalPeople").innerText =
+    receipts.length;
+
+    document.getElementById("totalReceipts").innerText =
+    receipts.length;
+
+    document.getElementById("totalAmount").innerText =
+    "₹" + total;
+
+    document.getElementById("paidAmount").innerText =
+    "₹" + paid;
+
+    document.getElementById("unpaidAmount").innerText =
+    "₹" + unpaid;
+}
+
+
+/* DISPLAY RECEIPTS */
+
+function displayReceipts(){
+
+    let list = document.getElementById("receiptList");
+
+    if(receipts.length === 0){
+        list.innerHTML =
+        `<p class="empty">No receipts created yet.</p>`;
+        return;
+    }
+
+    let output = "";
+
+    receipts.forEach(function(receipt){
+        output += createReceiptHTML(receipt);
+    });
+
+    list.innerHTML = output;
+}
+
+
+/* RECEIPT CARD */
+
+function createReceiptHTML(receipt){
+
+return `
+
+<div class="card receipt">
+
+<h3>🧾 Receipt No: GC-${receipt.receiptNumber}</h3>
+
+<p><b>📅 Date:</b> ${receipt.date}</p>
+
+<p><b>👤 Name:</b> ${receipt.name}</p>
+
+<p><b>💰 Amount:</b> ₹${receipt.amount}</p>
+
+<p><b>Status:</b> ${receipt.status}</p>
+
+<div class="action-buttons">
+
+<button class="view-btn"
+onclick="viewReceipt(${receipt.receiptNumber})">
+👁️ View Receipt
+</button>
+
+<button class="print-btn"
+onclick="openReceiptForPrint(${receipt.receiptNumber})">
+📥 Download / Save PDF
+</button>
+
+<button class="whatsapp-btn"
+onclick="shareWhatsApp(${receipt.receiptNumber})">
+📱 Share on WhatsApp
+</button>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+/* FIND RECEIPT */
+
+function getReceipt(receiptNumber){
+
+    return receipts.find(function(receipt){
+        return receipt.receiptNumber === receiptNumber;
+    });
+
+}
+
+
+/* PROFESSIONAL RECEIPT HTML */
+
+function getProfessionalReceiptHTML(receipt){
+
+return `
+
+<div class="professional-receipt">
+
+<div class="receipt-header">
+
+<h2>🙏 ${association.name}</h2>
+
+<p>${association.address}</p>
+
+</div>
+
+<div class="receipt-title">
+CHANDA COLLECTION RECEIPT
+</div>
+
+<p><b>📅 Date:</b> ${receipt.date}</p>
+
+<p><b>🧾 Receipt No:</b> GC-${receipt.receiptNumber}</p>
+
+<hr>
+
+<p><b>👤 Name:</b> ${receipt.name}</p>
+
+<p><b>📱 Mobile:</b> ${receipt.phone}</p>
+
+<p><b>📍 Address:</b> ${receipt.address}</p>
+
+<hr>
+
+<p><b>💰 Chanda Amount:</b> ₹${receipt.amount}</p>
+
+<p><b>Payment Status:</b> ${receipt.status}</p>
+
+<hr>
+
+<p><b>Collector:</b> ${association.admin}</p>
+
+<p style="text-align:center;">
+🙏 Thank you for your contribution 🙏
+</p>
+
+</div>
+
+`;
+
+}
+
+
+/* VIEW RECEIPT */
+
+function viewReceipt(receiptNumber){
+
+    let receipt = getReceipt(receiptNumber);
+
+    document.getElementById("professionalReceipt").innerHTML =
+    getProfessionalReceiptHTML(receipt);
+
+    document.getElementById("receiptModal").style.display="block";
+
+}
+
+
+/* CLOSE RECEIPT */
+
+function closeReceipt(){
+
+    document.getElementById("receiptModal").style.display="none";
+
+}
+
+
+/* PRINT / SAVE PDF */
+
+function printReceipt(){
+
+    let content =
+    document.getElementById("professionalReceipt").innerHTML;
+
+    let printWindow = window.open("", "", "width=700,height=800");
+
+    printWindow.document.write(`
+        <html>
+        <head>
+        <title>Ganesh Receipt</title>
+
+        <style>
+        body{
+            font-family:Arial;
+            padding:30px;
+        }
+
+        .professional-receipt{
+            border:2px solid #6a11cb;
+            border-radius:12px;
+            padding:25px;
+        }
+
+        .receipt-header{
+            text-align:center;
+            border-bottom:2px solid #ddd;
+        }
+
+        .receipt-header h2{
+            color:#6a11cb;
+        }
+
+        .receipt-title{
+            text-align:center;
+            font-weight:bold;
+            margin:20px;
+        }
+        </style>
+
+        </head>
+
+        <body>
+
+        ${content}
+
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+
+    setTimeout(function(){
+        printWindow.print();
+    },500);
+
+}
+
+
+/* OPEN RECEIPT FOR PRINT */
+
+function openReceiptForPrint(receiptNumber){
+
+    let receipt = getReceipt(receiptNumber);
+
+    document.getElementById("professionalReceipt").innerHTML =
+    getProfessionalReceiptHTML(receipt);
+
+    printReceipt();
+
+}
+
+
+/* WHATSAPP SHARE */
+
+function shareWhatsApp(receiptNumber){
+
+    let receipt = getReceipt(receiptNumber);
+
+    let message =
+
+`🙏 *${association.name}*
+
+🧾 *Chanda Collection Receipt*
+
+Receipt No: GC-${receipt.receiptNumber}
+
+📅 Date: ${receipt.date}
+
+👤 Name: ${receipt.name}
+
+💰 Amount: ₹${receipt.amount}
+
+Status: ${receipt.status}
+
+🙏 Thank you for your contribution!`;
+
+
+    let whatsappURL =
+    "https://wa.me/?text=" +
+    encodeURIComponent(message);
+
+    window.open(whatsappURL, "_blank");
+
+}
+
+
+/* SEARCH */
+
+function searchReceipts(){
+
+    let searchText =
+    document.getElementById("searchInput")
+    .value
+    .toLowerCase()
+    .trim();
+
+
+    let filteredReceipts =
+    receipts.filter(function(receipt){
+
+        return receipt.name.toLowerCase().includes(searchText) ||
+        receipt.phone.includes(searchText);
+
+    });
+
+
+    let list = document.getElementById("receiptList");
+
+
+    if(filteredReceipts.length === 0){
+
+        list.innerHTML =
+        `<p class="empty">No matching receipts found.</p>`;
+
+        return;
+    }
+
+
+    let output = "";
+
+    filteredReceipts.forEach(function(receipt){
+        output += createReceiptHTML(receipt);
+    });
+
+    list.innerHTML = output;
+}
+
+</script>
+
+</body>
+</html>
