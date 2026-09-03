@@ -1,7 +1,8 @@
 {
   "name": "Ganesh Chanda Collection",
   "short_name": "Ganesh Chanda",
-  "start_url": "/",
+  "start_url": "/ganesh-chanda-app/",
+  "scope": "/ganesh-chanda-app/",
   "display": "standalone",
   "background_color": "#FBF6EC",
   "theme_color": "#7A1220",
