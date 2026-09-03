@@ -493,6 +493,10 @@ button:focus-visible{
   margin:0 auto 8px;
 }
 
+/* PWA INSTALL BUTTON */
+.install-btn{background:var(--marigold-600);color:#fff;display:none;}
+.install-btn.show{display:block;}
+
 @media(max-width:450px){
 
   .header h1{
@@ -544,6 +548,10 @@ button:focus-visible{
 
     <button class="create" id="signupButton">
       ✨ Create New Account
+    </button>
+
+    <button type="button" class="install-btn" id="installAppButton">
+      📲 Install App
     </button>
 
   </div>
@@ -3241,6 +3249,43 @@ document.getElementById("logoutButton")
 
 });
 
+
+
+/* =========================
+   INSTALL PWA APP
+========================= */
+
+let deferredInstallPrompt = null;
+const installAppButton = document.getElementById("installAppButton");
+
+window.addEventListener("beforeinstallprompt", function(event){
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  if(installAppButton){
+    installAppButton.classList.add("show");
+  }
+});
+
+if(installAppButton){
+  installAppButton.addEventListener("click", async function(){
+    if(!deferredInstallPrompt){
+      alert("Install option is not available yet. Please use your browser menu and choose Install app or Add to Home screen.");
+      return;
+    }
+
+    deferredInstallPrompt.prompt();
+    await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    installAppButton.classList.remove("show");
+  });
+}
+
+window.addEventListener("appinstalled", function(){
+  deferredInstallPrompt = null;
+  if(installAppButton){
+    installAppButton.classList.remove("show");
+  }
+});
 
 /* =========================
    SERVICE WORKER
