@@ -523,7 +523,7 @@ button:focus-visible{
 
 <!-- LOGIN PAGE -->
 
-<div id="authPage" class="auth-page" style="display:none;">
+<div id="authPage" class="auth-page" style="display:flex;">
 
   <div class="auth-card">
 
@@ -1569,9 +1569,11 @@ onAuthStateChanged(auth, async function(user){
 
     currentUser = user;
 
+    // Hide login immediately once Firebase confirms the user.
     document.getElementById("authPage")
     .style.display = "none";
 
+    // Show the saved app structure as soon as association data is available.
     await loadAssociation();
 
   }else{
@@ -1768,9 +1770,11 @@ async function showMainApp(){
   }
 
 
-  await loadReceipts();
-
-  await loadExpenses();
+  // Load independent data in parallel for a faster startup.
+  await Promise.all([
+    loadReceipts(),
+    loadExpenses()
+  ]);
 
 }
 
