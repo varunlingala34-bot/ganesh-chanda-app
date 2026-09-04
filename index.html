@@ -479,6 +479,44 @@ button:focus-visible{
   margin:16px 0;
 }
 
+.app-loader{
+  position:fixed;
+  inset:0;
+  z-index:2000;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  background:linear-gradient(155deg,var(--maroon-900),var(--maroon-700) 55%,var(--marigold-600));
+  color:var(--ivory-50);
+}
+
+.loader-spinner{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  border:4px solid rgba(255,255,255,.32);
+  border-top-color:#fff;
+  animation:spin .75s linear infinite;
+}
+
+.loader-text{
+  font-size:13.5px;
+  opacity:.9;
+  margin:0;
+}
+
+@keyframes spin{
+  to{
+    transform:rotate(360deg);
+  }
+}
+
+/* PWA INSTALL BUTTON */
+.install-btn{background:var(--marigold-600);color:#fff;display:none;}
+.install-btn.show{display:block;}
+
 .brand-mark{
   overflow:hidden;
   box-shadow:0 6px 16px -6px rgba(94,14,25,.45);
@@ -492,10 +530,6 @@ button:focus-visible{
   border:3px solid rgba(255,255,255,.85);
   margin:0 auto 8px;
 }
-
-/* PWA INSTALL BUTTON */
-.install-btn{background:var(--marigold-600);color:#fff;display:none;}
-.install-btn.show{display:block;}
 
 @media(max-width:450px){
 
@@ -520,9 +554,15 @@ button:focus-visible{
 
 
 
+<!-- APP LOADER (shown until we know whether you're logged in) -->
+<div id="appLoader" class="app-loader">
+  <div class="loader-spinner"></div>
+  <p class="loader-text">Loading…</p>
+</div>
+
 <!-- LOGIN PAGE -->
 
-<div id="authPage" class="auth-page">
+<div id="authPage" class="auth-page" style="display:none;">
 
   <div class="auth-card">
 
@@ -1191,6 +1231,9 @@ import {
 }
 from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
+import { jsPDF }
+from "https://cdn.jsdelivr.net/npm/jspdf@2.5.2/+esm";
+
 
 /* =========================
    FIREBASE CONFIG
@@ -1330,6 +1373,15 @@ document.getElementById("loginButton")
   }
 
 
+  const button = document.getElementById("loginButton");
+
+  const originalText = button.innerHTML;
+
+  button.disabled = true;
+
+  button.innerHTML = "⏳ Logging in...";
+
+
   try{
 
     await signInWithEmailAndPassword(
@@ -1341,6 +1393,12 @@ document.getElementById("loginButton")
   }catch(error){
 
     alert(error.message);
+
+  }finally{
+
+    button.disabled = false;
+
+    button.innerHTML = originalText;
 
   }
 
@@ -1546,6 +1604,10 @@ document.getElementById("changePasswordButton")
 ========================= */
 
 onAuthStateChanged(auth, async function(user){
+
+  document.getElementById("appLoader")
+  .style.display = "none";
+
 
   if(user){
 
@@ -1801,6 +1863,152 @@ async function uploadToCloudinary(file){
 
 
   return data.secure_url;
+
+}
+
+
+/* =========================
+   CLOUDINARY PDF UPLOAD
+========================= */
+
+async function uploadPDFToCloudinary(pdfBlob, fileName){
+
+  const formData = new FormData();
+
+  formData.append("file", pdfBlob, fileName);
+
+  formData.append(
+    "upload_preset",
+    CLOUDINARY_UPLOAD_PRESET
+  );
+
+
+  const uploadURL =
+  `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/raw/upload`;
+
+
+  const response = await fetch(
+    uploadURL,
+    {
+      method:"POST",
+      body:formData
+    }
+  );
+
+
+  const data = await response.json();
+
+
+  if(!response.ok){
+
+    throw new Error(
+      data.error ?
+      data.error.message :
+      "PDF upload failed"
+    );
+
+  }
+
+
+  return data.secure_url;
+
+}
+
+
+/* =========================
+   BUILD RECEIPT PDF
+========================= */
+
+function buildReceiptPDF(receipt){
+
+  const pdfDoc = new jsPDF({
+    unit:"pt",
+    format:"a5"
+  });
+
+
+  const pageWidth =
+  pdfDoc.internal.pageSize.getWidth();
+
+  let y = 50;
+
+
+  pdfDoc.setFont("helvetica","bold");
+
+  pdfDoc.setFontSize(16);
+
+  pdfDoc.text(association.name, pageWidth / 2, y, { align:"center" });
+
+
+  y += 20;
+
+  pdfDoc.setFont("helvetica","normal");
+
+  pdfDoc.setFontSize(10);
+
+  pdfDoc.text(association.address, pageWidth / 2, y, { align:"center", maxWidth: pageWidth - 80 });
+
+
+  y += 30;
+
+  pdfDoc.setFont("helvetica","bold");
+
+  pdfDoc.setFontSize(13);
+
+  pdfDoc.text("CHANDA COLLECTION RECEIPT", pageWidth / 2, y, { align:"center" });
+
+
+  y += 25;
+
+  pdfDoc.setDrawColor(200);
+
+  pdfDoc.line(40, y, pageWidth - 40, y);
+
+
+  y += 25;
+
+  pdfDoc.setFont("helvetica","normal");
+
+  pdfDoc.setFontSize(11);
+
+
+  const rows = [
+    ["Receipt No", receipt.receiptNumber],
+    ["Date", receipt.date],
+    ["Name", receipt.name],
+    ["Mobile", receipt.phone],
+    ["Address", receipt.address],
+    ["Chanda Amount", "Rs. " + receipt.amount],
+    ["Status", receipt.status],
+    ["Collector", association.admin]
+  ];
+
+
+  rows.forEach(row => {
+
+    pdfDoc.setFont("helvetica","bold");
+
+    pdfDoc.text(row[0] + ":", 40, y);
+
+    pdfDoc.setFont("helvetica","normal");
+
+    pdfDoc.text(String(row[1]), 160, y, { maxWidth: pageWidth - 200 });
+
+    y += 22;
+
+  });
+
+
+  y += 15;
+
+  pdfDoc.setFont("helvetica","italic");
+
+  pdfDoc.setFontSize(11);
+
+  pdfDoc.text("Thank you for your contribution", pageWidth / 2, y, { align:"center" });
+
+
+  return pdfDoc.output("blob");
 
 }
 
@@ -2112,7 +2320,7 @@ function receiptButtons(receipt){
     </button>
 
     <button class="whatsapp-btn"
-    onclick="shareWhatsApp('${receipt.id}')">
+    onclick="shareWhatsApp('${receipt.id}', event)">
       📱 Share on WhatsApp
     </button>
 
@@ -3142,7 +3350,41 @@ document.getElementById("printButton")
    WHATSAPP RECEIPT
 ========================= */
 
-window.shareWhatsApp = function(id){
+function normalizeWhatsAppNumber(phone){
+
+  const digits = (phone || "").replace(/\D/g,"");
+
+
+  if(!digits) return "";
+
+
+  if(digits.length === 10){
+
+    return "91" + digits;
+
+  }
+
+
+  if(digits.length === 11 && digits.startsWith("0")){
+
+    return "91" + digits.slice(1);
+
+  }
+
+
+  if(digits.length === 12 && digits.startsWith("91")){
+
+    return digits;
+
+  }
+
+
+  return digits;
+
+}
+
+
+window.shareWhatsApp = async function(id, event){
 
   const receipt =
   receipts.find(item => item.id === id);
@@ -3151,30 +3393,83 @@ window.shareWhatsApp = function(id){
   if(!receipt) return;
 
 
+  const button = event ? event.currentTarget : null;
+
+  const originalButtonHTML = button ? button.innerHTML : null;
+
+
+  if(button){
+
+    button.disabled = true;
+
+    button.innerHTML = "⏳ Preparing...";
+
+  }
+
+
+  const waNumber = normalizeWhatsAppNumber(receipt.phone);
+
+
+  let pdfURL = "";
+
+  try{
+
+    const pdfBlob = buildReceiptPDF(receipt);
+
+    pdfURL = await uploadPDFToCloudinary(
+      pdfBlob,
+      receipt.receiptNumber + ".pdf"
+    );
+
+  }catch(error){
+
+    console.log("PDF upload failed, sending message without the PDF link:", error.message);
+
+  }
+
+
+  const pdfLine = pdfURL ?
+  `📄 View / Download Receipt (PDF):\n${pdfURL}\n\n` :
+  "";
+
+
   const message =
 
-`*${association.name}*
+`🕉️🙏 *${association.name}* 🙏🕉️
 
-🧾 *Chanda Collection Receipt*
+🧾✨ *Chanda Collection Receipt* ✨🧾
 
-Receipt No: ${receipt.receiptNumber}
+📌 *Receipt No:* ${receipt.receiptNumber}
 
-📅 Date: ${receipt.date}
+📅 *Date:* ${receipt.date}
 
-👤 Name: ${receipt.name}
+👤 *Name:* ${receipt.name}
 
-💰 Amount: ₹${receipt.amount}
+💰 *Amount:* ₹${receipt.amount}
 
-Status: ${receipt.status}
+✅ *Status:* ${receipt.status}
 
-Thank you for your contribution!`;
+${pdfLine}🙏💐 *Thank you for your valuable contribution!* 💐🙏
+
+🙏✨ *Ganapati Bappa Morya* ✨🙏`;
 
 
-  window.open(
-    "https://wa.me/?text=" +
-    encodeURIComponent(message),
-    "_blank"
-  );
+  const waURL =
+  (waNumber ? `https://wa.me/${waNumber}` : "https://wa.me/") +
+  "?text=" +
+  encodeURIComponent(message);
+
+
+  window.open(waURL, "_blank");
+
+
+  if(button){
+
+    button.disabled = false;
+
+    button.innerHTML = originalButtonHTML;
+
+  }
 
 };
 
@@ -3255,7 +3550,6 @@ document.getElementById("logoutButton")
   }
 
 });
-
 
 
 /* =========================
